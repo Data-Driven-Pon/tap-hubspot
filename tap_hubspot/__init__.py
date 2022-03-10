@@ -95,6 +95,7 @@ ENDPOINTS = {
     "forms":                "/forms/v2/forms",
     "workflows":            "/automation/v3/workflows",
     "owners":               "/owners/v2/owners",
+    "line_items":           "/crm-objects/v1/objects/line_items/paged"
 }
 
 def get_start(state, tap_stream_id, bookmark_key):
