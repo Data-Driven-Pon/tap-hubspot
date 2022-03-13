@@ -95,7 +95,7 @@ ENDPOINTS = {
     "forms":                "/forms/v2/forms",
     "workflows":            "/automation/v3/workflows",
     "owners":               "/owners/v2/owners",
-    "line_items":           "/crm-objects/v1/objects/line_items/paged"
+    "line_items":           "/crm/v3/objects/line_items"
 }
 
 def get_start(state, tap_stream_id, bookmark_key):
@@ -930,6 +930,17 @@ def sync_deal_pipelines(STATE, ctx):
     singer.write_state(STATE)
     return STATE
 
+def sync_line_items(STATE, ctx):
+    catalog = ctx.get_catalog_from_id(singer.get_currently_syncing(STATE))
+    mdata = metadata.to_map(catalog.get('metadata'))
+    schema = load_schema('line_items')
+    LOGGER.info('line_items')
+    data = request(get_url('line_items')).json().get("results")
+    singer.write_records("line_items", data)
+    singer.write_state(STATE)
+
+    return STATE
+
 @attr.s
 class Stream(object):
     tap_stream_id = attr.ib()
@@ -953,7 +964,8 @@ STREAMS = [
     Stream('companies', sync_companies, ["companyId"], 'hs_lastmodifieddate', 'FULL_TABLE'),
     Stream('deals', sync_deals, ["dealId"], 'hs_lastmodifieddate', 'FULL_TABLE'),
     Stream('deal_pipelines', sync_deal_pipelines, ['pipelineId'], None, 'FULL_TABLE'),
-    Stream('engagements', sync_engagements, ["engagement_id"], 'lastUpdated', 'FULL_TABLE')
+    Stream('engagements', sync_engagements, ["engagement_id"], 'lastUpdated', 'FULL_TABLE'),
+    Stream('line_items', sync_line_items, ["id"], "createdAt", 'FULL_TABLE')
 ]
 
 def get_streams_to_sync(streams, state):
